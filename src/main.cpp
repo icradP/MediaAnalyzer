@@ -13,7 +13,6 @@
 #include "SPS.h"
 #include "imgui_tree.h"
 
-
 // About Desktop OpenGL function loaders:
 //  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
 //  Helper libraries are often used for this purpose! Here we are supporting a few common ones (gl3w, glew, glad).
@@ -37,7 +36,7 @@ using namespace gl;
 #include <glbinding/gl/gl.h>
 using namespace gl;
 #else
-#include IMGUI_IMPL_OPENGL_LOADER_CUSTOM
+#define IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 #endif
 
 // Include glfw3.h after our OpenGL definitions
@@ -55,7 +54,7 @@ static void glfw_error_callback(int error, const char *description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
-static void HelpMarker(const char* desc)
+static void HelpMarker(const char *desc)
 {
     ImGui::TextDisabled("(?)");
     if (ImGui::IsItemHovered())
@@ -164,7 +163,7 @@ int main(int, char **)
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double
     // backslash \\ !
-    //io.Fonts->AddFontDefault();
+    // io.Fonts->AddFontDefault();
     // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
     // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
     // io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
@@ -218,7 +217,7 @@ int main(int, char **)
 
             ImGui::Begin("SPSParser");
             static std::string test{"6742c029e901405ef2c02c2211a8"};
-            //6742c016d900a02ff9610000030001000003001e0f162e48
+            // 6742c016d900a02ff9610000030001000003001e0f162e48
             ImGui::InputTextMultiline(
               "HEX TEXT",
               &test,
@@ -238,7 +237,7 @@ int main(int, char **)
                                                  // edited/activated)
                 {
                     if (spshelper.loadBin(binsps.data(), binsps.size()))
-                    {   
+                    {
                         b_parser_sps = true;
                         spshelper.loadSPSInfo();
                         int height = 0;
@@ -247,20 +246,19 @@ int main(int, char **)
                         float fpsf = 0.0;
                         spshelper.getFremeRateFloat(fpsf);
                         spshelper.getFremeRateInt(fpsi);
-                        spshelper.getWidthXHeight(width,height);
+                        spshelper.getWidthXHeight(width, height);
                         std::cout << "Height: " << height << std::endl;
                         std::cout << "Width: " << width << std::endl;
-                        std::cout << "Fps(float/Int): " << fpsf<<"/"<<fpsi<< std::endl;
-                      
-                    }else{
+                        std::cout << "Fps(float/Int): " << fpsf << "/" << fpsi << std::endl;
+                    }
+                    else
+                    {
                         b_parser_sps = false;
                     }
-
-                    
                 }
 
                 ImGui::SameLine();
-                ImGui::TextColored(clear_color,"%s",b_parser_sps?"Parsed sussuced":"");
+                ImGui::TextColored(clear_color, "%s", b_parser_sps ? "Parsed sussuced" : "");
             }
             else
             {
@@ -281,7 +279,8 @@ int main(int, char **)
 
             ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
 
-            ImGui::TextColored(clear_color,"This is some useful text.");          // Display some text (you can use a format strings too)
+            ImGui::TextColored(
+              clear_color, "This is some useful text.");       // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
             ImGui::Checkbox("Another Window", &show_another_window);
 
@@ -304,11 +303,11 @@ int main(int, char **)
         // 3. Show another simple window.
         if (show_another_window)
         {
-            ImGui::Begin("Another Window", &show_another_window);  
+            ImGui::Begin("Another Window", &show_another_window);
             // Pass a pointer to our bool variable (the
-            //window will have a closing button that will clear the bool when clicked)
+            // window will have a closing button that will clear the bool when clicked)
             show_tree_windows();
-             ImGui::Text("Hello from anotherwindow!");
+            ImGui::Text("Hello from anotherwindow!");
             if (ImGui::Button("Close Me"))
                 show_another_window = false;
             ImGui::End();
