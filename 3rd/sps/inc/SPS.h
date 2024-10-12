@@ -13,9 +13,10 @@ std::vector<char> hexToChar(const std::string& hexInput) ;
 bool inputSps(const char *sps, size_t sps_len,T_SPS& tH264SpsInfo);
 struct SPSHelper
 {   
+    bool isSpsValid=false;
     T_SPS tSps;
     std::vector<char> bSps;
-    std::map<std::string, void*> spsInfo;
+    std::map<std::string, std::pair<std::string,void*>> spsInfo;
     std::vector<char> getBin();
     std::string getHex();
     bool loadBin(const char *sps, size_t sps_len);

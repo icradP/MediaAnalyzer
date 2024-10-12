@@ -11,7 +11,10 @@
 #include "imgui_memory_editor.h"
 
 #include "SPS.h"
+SPSHelper spshelper;
+
 #include "imgui_tree.h"
+#include "imgui_sps_tree.h"
 
 // About Desktop OpenGL function loaders:
 //  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
@@ -54,18 +57,7 @@ static void glfw_error_callback(int error, const char *description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
-static void HelpMarker(const char *desc)
-{
-    ImGui::TextDisabled("(?)");
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(desc);
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
-}
+
 int main(int, char **)
 {
     // Setup window
@@ -89,12 +81,14 @@ int main(int, char **)
     // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
-
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     // Create window with graphics context
     GLFWwindow *window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glfwSwapInterval(1); // Enable vsync
 
     // Initialize OpenGL loader
@@ -131,7 +125,7 @@ int main(int, char **)
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
-    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
     io.ConfigViewportsNoAutoMerge = true;
     io.ConfigViewportsNoTaskBarIcon = true;
 
@@ -175,7 +169,6 @@ int main(int, char **)
     bool show_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    SPSHelper spshelper;
     static MemoryEditor mem_edit_1;
     static std::vector<char> mem_data;
     mem_data.resize(0x10000);
@@ -306,7 +299,24 @@ int main(int, char **)
             ImGui::Begin("Another Window", &show_another_window);
             // Pass a pointer to our bool variable (the
             // window will have a closing button that will clear the bool when clicked)
-            show_tree_windows();
+            // show_sps_info_windows();
+
+            if (ImGui::CollapsingHeader("SPS Tree"))
+            {
+                for (const auto &[key, value] : spshelper.spsInfo)
+                {
+                    if(ImGui::TreeNode(key.c_str())){
+                        ImGui::SameLine();
+                        ImGui::Text("Type: %s", value.first.c_str());
+                        if(!value.first.compare("int")){
+                            ImGui::Text("Value : %d", *(int*)value.second);
+                        }
+                        ImGui::TreePop();
+                    }
+                }
+            }
+
+
             ImGui::Text("Hello from anotherwindow!");
             if (ImGui::Button("Close Me"))
                 show_another_window = false;

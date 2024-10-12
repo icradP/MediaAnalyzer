@@ -1,4 +1,17 @@
 #include "SPS.h"
+#include <iostream>
+#include <typeinfo>
+#include <cxxabi.h>
+#include <memory>
+
+std::string demangle(const char* name) {
+    int status = -1;
+    std::unique_ptr<char, void(*)(void*)> res {
+        abi::__cxa_demangle(name, nullptr, nullptr, &status),
+        std::free
+    };
+    return (status == 0) ? res.get() : name;
+}
 using namespace std;
 string charToHex(const char *input, size_t size)
 {
@@ -76,67 +89,71 @@ bool SPSHelper::loadBin(const char *sps, size_t sps_len)
 bool SPSHelper::loadHex(const string hexInput)
 {
     bSps = hexToChar(hexInput);
-    return loadBin(bSps.data(), bSps.size());
+    isSpsValid=loadBin(bSps.data(), bSps.size());
+    return isSpsValid;
 }
 
+
+#define REGISTER_SPS_INFO(member) \
+    spsInfo[#member]={demangle(typeid(tSps.member).name()),&(tSps.member)};
 //获取T_SPS 结构体的成员变量地址 并将值映射到map容器中
 void SPSHelper::loadSPSInfo()
 {
-    spsInfo["uiSpsId"] = &(tSps.uiSpsId);
-    spsInfo["iProfileIdc"] = &(tSps.iProfileIdc);
-    spsInfo["iLevelIdc"] = &(tSps.iLevelIdc);
-    spsInfo["iChromaFormatIdc"] = &(tSps.iChromaFormatIdc);
-    spsInfo["iTransformBypass"] = &(tSps.iTransformBypass);
-    spsInfo["iLog2MaxFrameNum"] = &(tSps.iLog2MaxFrameNum);
-    spsInfo["iPocType"] = &(tSps.iPocType);
-    spsInfo["iLog2MaxPocLsb"] = &(tSps.iLog2MaxPocLsb);
-    spsInfo["iDeltaPicOrderAlwaysZeroFlag"] = &(tSps.iDeltaPicOrderAlwaysZeroFlag);
-    spsInfo["iOffsetForNonRefPic"] = &(tSps.iOffsetForNonRefPic);
-    spsInfo["iOffsetForTopToBottomField"] = &(tSps.iOffsetForTopToBottomField);
-    spsInfo["iPocCycleLength"] = &(tSps.iPocCycleLength);
-    spsInfo["iRefFrameCount"] = &(tSps.iRefFrameCount);
-    spsInfo["iGapsInFrameNumAllowedFlag"] = &(tSps.iGapsInFrameNumAllowedFlag);
-    spsInfo["iMbWidth"] = &(tSps.iMbWidth);
-    spsInfo["iMbHeight"] = &(tSps.iMbHeight);
-    spsInfo["iFrameMbsOnlyFlag"] = &(tSps.iFrameMbsOnlyFlag);
-    spsInfo["iMbAff"] = &(tSps.iMbAff);
-    spsInfo["iDirect8x8InferenceFlag"] = &(tSps.iDirect8x8InferenceFlag);
-    spsInfo["iCrop"] = &(tSps.iCrop);
-    spsInfo["uiCropLeft"] = &(tSps.uiCropLeft);
-    spsInfo["uiCropRight"] = &(tSps.uiCropRight);
-    spsInfo["uiCropTop"] = &(tSps.uiCropTop);
-    spsInfo["uiCropBottom"] = &(tSps.uiCropBottom);
-    spsInfo["iVuiParametersPresentFlag"] = &(tSps.iVuiParametersPresentFlag);
-    spsInfo["tSar"] = &(tSps.tSar);
-    spsInfo["iVideoSignalTypePresentFlag"] = &(tSps.iVideoSignalTypePresentFlag);
-    spsInfo["iFullRange"] = &(tSps.iFullRange);
-    spsInfo["iColourDescriptionPresentFlag"] = &(tSps.iColourDescriptionPresentFlag);
-    spsInfo["tColorPrimaries"] = &(tSps.tColorPrimaries);
-    spsInfo["tColorTrc"] = &(tSps.tColorTrc);
-    spsInfo["tColorspace"] = &(tSps.tColorspace);
-    spsInfo["iTimingInfoPresentFlag"] = &(tSps.iTimingInfoPresentFlag);
-    spsInfo["u32NumUnitsInTick"] = &(tSps.u32NumUnitsInTick);
-    spsInfo["u32TimeScale"] = &(tSps.u32TimeScale);
-    spsInfo["iFixedFrameRateFlag"] = &(tSps.iFixedFrameRateFlag);
-    spsInfo["asOffsetForRefFrame"] = &(tSps.asOffsetForRefFrame);
-    spsInfo["iBitstreamRestrictionFlag"] = &(tSps.iBitstreamRestrictionFlag);
-    spsInfo["iNumReorderFrames"] = &(tSps.iNumReorderFrames);
-    spsInfo["iScalingMatrixPresent"] = &(tSps.iScalingMatrixPresent);
-    spsInfo["aau8ScalingMatrix4"] = &(tSps.aau8ScalingMatrix4);
-    spsInfo["aau8ScalingMatrix8"] = &(tSps.aau8ScalingMatrix8);
-    spsInfo["iNalHrdParametersPresentFlag"] = &(tSps.iNalHrdParametersPresentFlag);
-    spsInfo["iVclHrdParametersPresentFlag"] = &(tSps.iVclHrdParametersPresentFlag);
-    spsInfo["iPicStructPresentFlag"] = &(tSps.iPicStructPresentFlag);
-    spsInfo["iTimeOffsetLength"] = &(tSps.iTimeOffsetLength);
-    spsInfo["iCpbCnt"] = &(tSps.iCpbCnt);
-    spsInfo["iInitialCpbRemovalDelayLength"] = &(tSps.iInitialCpbRemovalDelayLength);
-    spsInfo["iCpbRemovalDelayLength"] = &(tSps.iCpbRemovalDelayLength);
-    spsInfo["iDpbOutputDelayLength"] = &(tSps.iDpbOutputDelayLength);
-    spsInfo["iBitDepthLuma"] = &(tSps.iBitDepthLuma);
-    spsInfo["iBitDepthChroma"] = &(tSps.iBitDepthChroma);
-    spsInfo["iResidualColorTransformFlag"] = &(tSps.iResidualColorTransformFlag);
-    spsInfo["iConstraintSetFlags"] = &(tSps.iConstraintSetFlags);
-    spsInfo["iNew"] = &(tSps.iNew);
+    
+    REGISTER_SPS_INFO(uiSpsId);
+    REGISTER_SPS_INFO(iProfileIdc); 
+    REGISTER_SPS_INFO(iLevelIdc); 
+    REGISTER_SPS_INFO(iChromaFormatIdc); 
+    REGISTER_SPS_INFO(iTransformBypass); 
+    REGISTER_SPS_INFO(iLog2MaxFrameNum); 
+    REGISTER_SPS_INFO(iPocType); 
+    REGISTER_SPS_INFO(iLog2MaxPocLsb); 
+    REGISTER_SPS_INFO(iDeltaPicOrderAlwaysZeroFlag); 
+    REGISTER_SPS_INFO(iOffsetForNonRefPic); 
+    REGISTER_SPS_INFO(iOffsetForTopToBottomField); 
+    REGISTER_SPS_INFO(iPocCycleLength); 
+    REGISTER_SPS_INFO(iRefFrameCount); 
+    REGISTER_SPS_INFO(iGapsInFrameNumAllowedFlag); 
+    REGISTER_SPS_INFO(iMbWidth); 
+    REGISTER_SPS_INFO(iMbHeight); 
+    REGISTER_SPS_INFO(iFrameMbsOnlyFlag); 
+    REGISTER_SPS_INFO(iMbAff); 
+    REGISTER_SPS_INFO(iDirect8x8InferenceFlag); 
+    REGISTER_SPS_INFO(iCrop); 
+    REGISTER_SPS_INFO(uiCropLeft); 
+    REGISTER_SPS_INFO(uiCropRight); 
+    REGISTER_SPS_INFO(uiCropTop); 
+    REGISTER_SPS_INFO(uiCropBottom); 
+    REGISTER_SPS_INFO(iVuiParametersPresentFlag); 
+    REGISTER_SPS_INFO(tSar); 
+    REGISTER_SPS_INFO(iVideoSignalTypePresentFlag); 
+    REGISTER_SPS_INFO(iFullRange); 
+    REGISTER_SPS_INFO(iColourDescriptionPresentFlag); 
+    REGISTER_SPS_INFO(tColorPrimaries); 
+    REGISTER_SPS_INFO(tColorTrc); 
+    REGISTER_SPS_INFO(tColorspace); 
+    REGISTER_SPS_INFO(iTimingInfoPresentFlag); 
+    REGISTER_SPS_INFO(u32NumUnitsInTick); 
+    REGISTER_SPS_INFO(u32TimeScale); 
+    REGISTER_SPS_INFO(iFixedFrameRateFlag); 
+    REGISTER_SPS_INFO(iBitstreamRestrictionFlag); 
+    REGISTER_SPS_INFO(iNumReorderFrames); 
+    REGISTER_SPS_INFO(iScalingMatrixPresent); 
+    REGISTER_SPS_INFO(aau8ScalingMatrix4); 
+    REGISTER_SPS_INFO(aau8ScalingMatrix8); 
+    REGISTER_SPS_INFO(iNalHrdParametersPresentFlag); 
+    REGISTER_SPS_INFO(iVclHrdParametersPresentFlag); 
+    REGISTER_SPS_INFO(iPicStructPresentFlag); 
+    REGISTER_SPS_INFO(iTimeOffsetLength); 
+    REGISTER_SPS_INFO(iCpbCnt); 
+    REGISTER_SPS_INFO(iInitialCpbRemovalDelayLength); 
+    REGISTER_SPS_INFO(iCpbRemovalDelayLength); 
+    REGISTER_SPS_INFO(iDpbOutputDelayLength); 
+    REGISTER_SPS_INFO(iBitDepthLuma); 
+    REGISTER_SPS_INFO(iBitDepthChroma); 
+    REGISTER_SPS_INFO(iResidualColorTransformFlag); 
+    REGISTER_SPS_INFO(iConstraintSetFlags); 
+    REGISTER_SPS_INFO(iNew); 
 }
 
 void SPSHelper::getWidthXHeight(int &width, int &height)
